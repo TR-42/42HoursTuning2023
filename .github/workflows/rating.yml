@@ -6,6 +6,9 @@ on:
       - "app/**"
   workflow_dispatch:
 
+concurrency:
+  group: rating
+
 jobs:
   rating:
     timeout-minutes: 15
