@@ -1,0 +1,39 @@
+name: rating
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/rating.yml"
+      - "app/**"
+  workflow_dispatch:
+
+concurrency:
+  group: rating
+
+jobs:
+  rating:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    env:
+      SSH_PRIVATE_KEY_PATH: ~/.ssh/id_rsa
+    steps:
+      - run: mkdir -p ~/.ssh
+      - run: echo '${{ secrets.SSH_PRIVATE_KEY }}' > ${{ env.SSH_PRIVATE_KEY_PATH }} && chmod 400 ${{ env.SSH_PRIVATE_KEY_PATH }}
+      - run: echo '${{ secrets.SSH_KNOWN_HOST_ED25519 }}' >> ~/.ssh/known_hosts
+      - run: echo '${{ secrets.SSH_KNOWN_HOST_SHA2_NISTP256 }}' >> ~/.ssh/known_hosts
+      - id: run_rating
+        run: ssh -tt -i ${{ env.SSH_PRIVATE_KEY_PATH }} azureuser@env-rabbit.ftt2306.dabaas.net '~/rating.sh "${{ github.sha }}" "${{ github.ref }}"' > log
+      - name: Show failed requests
+        if: always() && steps.run_rating.outcome != 'skipped'
+        run: cat log | grep 'WARN'
+      - name: Show result
+        if: always() && steps.run_rating.outcome != 'skipped'
+        run: cat log | tail -n 200
+      - name: Show score to summary
+        if: always() && steps.run_rating.outcome != 'skipped'
+        run: |
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat log | tail -n 45 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+      - name: kill rating process
+        if: always() && steps.run_rating.outcome == 'cancelled'
+        run: ssh -i ~/.ssh/id_rsa azureuser@env-rabbit.ftt2306.dabaas.net '~/kill_rating.sh'
