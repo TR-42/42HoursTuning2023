@@ -22,6 +22,12 @@ jobs:
       - run: echo '${{ secrets.SSH_KNOWN_HOST_SHA2_NISTP256 }}' >> ~/.ssh/known_hosts
       - id: run_rating
         run: ssh -tt -i ${{ env.SSH_PRIVATE_KEY_PATH }} azureuser@env-rabbit.ftt2306.dabaas.net '~/rating.sh "${{ github.sha }}" "${{ github.ref }}"' > log
+      - name: Upload result log
+        if: always() && steps.run_rating.outcome != 'skipped'
+        uses: actions/upload-artifact@v3
+        with:
+          name: log
+          path: log
       - name: Show failed requests
         if: always() && steps.run_rating.outcome != 'skipped'
         run: cat log | grep 'WARN'
