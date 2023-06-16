@@ -25,11 +25,14 @@ jobs:
       - name: Show failed requests
         if: always() && steps.run_rating.outcome != 'skipped'
         run: cat log | grep 'WARN'
-      - name: Show score
+      - name: Show result
+        if: always() && steps.run_rating.outcome != 'skipped'
+        run: cat log | tail -n 200
+      - name: Show score to summary
         if: always() && steps.run_rating.outcome != 'skipped'
         run: |
           echo '```' >> $GITHUB_STEP_SUMMARY
-          cat log | tail -n 300 >> $GITHUB_STEP_SUMMARY
+          cat log | tail -n 45 >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
       - name: kill rating process
         if: always() && steps.run_rating.outcome == 'cancelled'
