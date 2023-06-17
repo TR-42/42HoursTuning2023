@@ -5,8 +5,8 @@ import {
   UserForFilter,
 } from "../../model/types";
 import {
+  getRegisteredSkillNames,
   getUserIdsBeforeMatched,
-  hasSkillNameRecord,
   insertMatchGroup,
 } from "./repository";
 import { getUserForFilter } from "../users/repository";
@@ -15,13 +15,15 @@ import { convertDateToString } from "../../model/utils";
 export const checkSkillsRegistered = async (
   skillNames: string[]
 ): Promise<string | undefined> => {
+  if (skillNames.length <= 0)
+    return undefined;
+  const registeredSkillNames = await getRegisteredSkillNames(skillNames);
   for (const skillName of skillNames) {
-    if (!(await hasSkillNameRecord(skillName))) {
+    if (!registeredSkillNames.includes(skillName)) {
       return skillName;
     }
   }
-
-  return;
+  return undefined;
 };
 
 export const createMatchGroup = async (

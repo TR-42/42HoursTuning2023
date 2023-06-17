@@ -14,6 +14,20 @@ export const hasSkillNameRecord = async (
   return rows.length > 0;
 };
 
+export const getRegisteredSkillNames = async (
+  skillNames: string[]
+): Promise<string[]> => {
+  if (skillNames.length <= 0)
+    return [];
+
+    const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT DISTINCT skill_name FROM skill WHERE skill_name IN (?)",
+    [skillNames]
+  );
+
+  return rows.map(v => v.skill_name);
+};
+
 export const getUserIdsBeforeMatched = async (
   userId: string
 ): Promise<string[]> => {
