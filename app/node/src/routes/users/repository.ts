@@ -240,7 +240,7 @@ export const getUserForFilter = async (
 ): Promise<UserForFilter> => {
   let userRows: RowDataPacket[];
   if (!userId) {
-    [userRos] = await pool.query<RowDataPacket[]>(
+    [userRows] = await pool.query<RowDataPacket[]>(
       `
       SELECT
         user_name,
