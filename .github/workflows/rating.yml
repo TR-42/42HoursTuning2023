@@ -1,4 +1,5 @@
 name: rating
+run-name: Rating (${{ github.ref }})
 on:
   pull_request:
     paths:
@@ -20,8 +21,10 @@ jobs:
       - run: echo '${{ secrets.SSH_PRIVATE_KEY }}' > ${{ env.SSH_PRIVATE_KEY_PATH }} && chmod 400 ${{ env.SSH_PRIVATE_KEY_PATH }}
       - run: echo '${{ secrets.SSH_KNOWN_HOST_ED25519 }}' >> ~/.ssh/known_hosts
       - run: echo '${{ secrets.SSH_KNOWN_HOST_SHA2_NISTP256 }}' >> ~/.ssh/known_hosts
+      - id: run_git_checkout
+        run: ssh -tt -i ${{ env.SSH_PRIVATE_KEY_PATH }} azureuser@env-rabbit.ftt2306.dabaas.net '~/git_checkout.sh "${{ github.sha }}" "${{ github.ref }}"'
       - id: run_rating
-        run: ssh -tt -i ${{ env.SSH_PRIVATE_KEY_PATH }} azureuser@env-rabbit.ftt2306.dabaas.net '~/rating.sh "${{ github.sha }}" "${{ github.ref }}"' > log
+        run: ssh -tt -i ${{ env.SSH_PRIVATE_KEY_PATH }} azureuser@env-rabbit.ftt2306.dabaas.net '~/rating.sh' > log
       - name: Upload result log
         if: always() && steps.run_rating.outcome != 'skipped'
         uses: actions/upload-artifact@v3

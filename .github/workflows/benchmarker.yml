@@ -6,10 +6,12 @@ on:
     paths:
       - ".github/workflows/k6.yml"
       - "benchmarker/**"
+      - "app/**"
   pull_request:
     paths:
       - ".github/workflows/k6.yml"
       - "benchmarker/**"
+      - "app/**"
   workflow_dispatch:
 defaults:
   run:
