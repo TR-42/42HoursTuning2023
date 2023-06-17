@@ -1,8 +1,0 @@
-CONTAINER ID   IMAGE                    COMMAND                  CREATED         STATUS                    PORTS                                NAMES
-2ad93c7414ef   app-mysql                "docker-entrypoint.s…"   14 hours ago    Up 14 hours               33060/tcp, 0.0.0.0:33060->3306/tcp   mysql
-e48dee15cc8c   app-frontend             "docker-entrypoint.s…"   14 hours ago    Up 14 hours                                                    frontend
-d378898c3326   nginx:1.24               "/docker-entrypoint.…"   14 hours ago    Up 14 hours               0.0.0.0:80->80/tcp                   nginx
-64beb6be642c   app-backend              "docker-entrypoint.s…"   14 hours ago    Up 14 hours               8000/tcp                             backend
-8753f31985a6   mysql:8.0.32             "docker-entrypoint.s…"   12 days ago     Up 14 hours               0.0.0.0:3306->3306/tcp, 33060/tcp    app-db-mysql-1
-07075559c3a3   docker/getting-started   "/docker-entrypoint.…"   13 days ago     Exited (0) 14 hours ago   0.0.0.0:80->80/tcp                   affectionate_galois
-d1ca30782259   docker/getting-started   "/docker-entrypoint.…"   13 months ago   Exited (0) 13 days ago                                         sweet_roentgen

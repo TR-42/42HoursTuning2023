@@ -35,7 +35,6 @@ sessionRouter.post(
     }
 
     const { mail, password }: { mail: string; password: string } = req.body;
-
     const hashPassword = createHash("sha256").update(password).digest("hex");
 
     try {
