@@ -1,13 +1,15 @@
 import express from "express";
-import { execSync } from "child_process";
 import { v4 as uuidv4 } from "uuid";
 import { getUserIdByMailAndPassword } from "../users/repository";
 import {
   getSessionByUserId,
   createSession,
-  getSessionBySessionId,
   deleteSessions,
 } from "./repository";
+import {createHash} from "crypto";
+import { ResultSetHeader } from "mysql2";
+import { Session } from "../../model/types";
+import { convertDateToString } from "../../model/utils";
 
 export const sessionRouter = express.Router();
 
@@ -33,11 +35,7 @@ sessionRouter.post(
     }
 
     const { mail, password }: { mail: string; password: string } = req.body;
-
-    const hashPassword = execSync(
-      `echo -n ${password} | shasum -a 256 | awk '{printf $1}'`,
-      { shell: "/bin/bash" }
-    ).toString();
+    const hashPassword = createHash("sha256").update(password).digest("hex");
 
     try {
       const userId = await getUserIdByMailAndPassword(mail, hashPassword);
@@ -61,9 +59,14 @@ sessionRouter.post(
       }
 
       const sessionId = uuidv4();
-      await createSession(sessionId, userId, new Date());
-      const createdSession = await getSessionBySessionId(sessionId);
-      if (!createdSession) {
+      const createdAt = new Date()
+      const [insertResult] = (await createSession(sessionId, userId, createdAt)) as [ResultSetHeader, any];
+      const createdSession: Session = {
+        sessionId: sessionId,
+        userId: userId,
+        createdAt: convertDateToString (createdAt)
+      };
+      if (!insertResult.affectedRows || insertResult.affectedRows <= 0) {
         res.status(500).json({
           message: "ログインに失敗しました。",
         });
