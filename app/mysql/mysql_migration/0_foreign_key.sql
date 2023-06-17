@@ -1,4 +1,5 @@
-ALTER TABLE `seesion`
+/*
+ALTER TABLE `session`
 ADD FOREIGN KEY (linked_user_id) REFERENCES `user`(user_id);
 
 ALTER TABLE `department_role_member`
@@ -16,3 +17,4 @@ FOREIGN KEY (match_group_id) REFERENCES `match_group`(match_group_id);
 
 ALTER TABLE `user`
 ADD FOREIGN KEY (office_id) REFERENCES `office`(office_id);
+*/
