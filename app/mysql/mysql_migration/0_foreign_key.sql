@@ -1,4 +1,4 @@
-ALTER TABLE `seesion`
+ALTER TABLE `session`
 ADD FOREIGN KEY (linked_user_id) REFERENCES `user`(user_id);
 
 ALTER TABLE `department_role_member`
