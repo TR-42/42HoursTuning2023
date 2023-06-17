@@ -28,7 +28,7 @@ export const getUsers = async (
 ): Promise<User[]> => {
   const query = `
   SELECT
-    user.user_id AS user_id
+    user.user_id AS user_id,
     user.user_name AS user_name,
     office.office_name AS office_name,
     file.file_name AS file_name,
