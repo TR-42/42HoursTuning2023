@@ -28,6 +28,7 @@ export const getUsers = async (
 ): Promise<User[]> => {
   const query = `
   SELECT
+    user.user_id AS user_id
     user.user_name AS user_name,
     office.office_name AS office_name,
     file.file_name AS file_name,
@@ -38,7 +39,7 @@ export const getUsers = async (
   JOIN
     office ON office.office_id = user.office_id
   ORDER BY
-    entry_date ASC, kana ASC
+    user.entry_date ASC, user.kana ASC
   LIMIT ?
   OFFSET ?`;
 
