@@ -26,7 +26,7 @@ export const createSession = async (
   userId: string,
   now: Date
 ) => {
-  return await pool.query(
+  await pool.query(
     "INSERT INTO session (session_id, linked_user_id, created_at) VALUES (?, ?, ?)",
     [sessionId, userId, now]
   );
