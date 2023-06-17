@@ -243,8 +243,10 @@ export const getUserForFilter = async (
     [userRows] = await pool.query<RowDataPacket[]>(
       `
       SELECT
+        user_id,
         user_name,
-        user_id_int
+        office_id,
+        user_icon_id
       FROM
         user
       WHERE
