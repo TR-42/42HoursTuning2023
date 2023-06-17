@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   rating:
-    timeout-minutes: 20
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     env:
       SSH_PRIVATE_KEY_PATH: ~/.ssh/id_rsa
