@@ -9,6 +9,7 @@ import {
 import {createHash} from "crypto";
 import { ResultSetHeader } from "mysql2";
 import { Session } from "../../model/types";
+import { convertDateToString } from "../../model/utils";
 
 export const sessionRouter = express.Router();
 
@@ -63,7 +64,7 @@ sessionRouter.post(
       const createdSession: Session = {
         sessionId: sessionId,
         userId: userId,
-        createdAt: createdAt
+        createdAt: convertDateToString (createdAt)
       };
       if (!insertResult.affectedRows || insertResult.affectedRows <= 0) {
         res.status(500).json({
