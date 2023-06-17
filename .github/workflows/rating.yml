@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   rating:
-    timeout-minutes: 10
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     env:
       SSH_PRIVATE_KEY_PATH: ~/.ssh/id_rsa
@@ -42,4 +42,4 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
       - name: kill rating process
         if: always() && steps.run_rating.outcome == 'cancelled'
-        run: ssh -i ~/.ssh/id_rsa azureuser@env-rabbit.ftt2306.dabaas.net '~/kill_rating.sh'
+        run: ssh -i ~/.ssh/id_rsa azureuser@env-rabbit.ftt2306.dabaas.net '~/stop_rating.sh'
