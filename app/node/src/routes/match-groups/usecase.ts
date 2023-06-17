@@ -5,12 +5,12 @@ import {
   UserForFilter,
 } from "../../model/types";
 import {
-  getMatchGroupDetailByMatchGroupId,
   getUserIdsBeforeMatched,
   hasSkillNameRecord,
   insertMatchGroup,
 } from "./repository";
 import { getUserForFilter } from "../users/repository";
+import { convertDateToString } from "../../model/utils";
 
 export const checkSkillsRegistered = async (
   skillNames: string[]
@@ -80,18 +80,21 @@ export const createMatchGroup = async (
     console.log(`${candidate.userId} is added to members`);
   }
 
+  const createdAt = new Date();
   const matchGroupId = uuidv4();
-  await insertMatchGroup({
+  const matchGroupDetail: MatchGroupDetail = {
     matchGroupId,
     matchGroupName: matchGroupConfig.matchGroupName,
     description: matchGroupConfig.description,
     members,
     status: "open",
     createdBy: matchGroupConfig.ownerId,
-    createdAt: new Date(),
-  });
+    createdAt: createdAt,
+  };
+  await insertMatchGroup(matchGroupDetail);
 
-  return await getMatchGroupDetailByMatchGroupId(matchGroupId);
+  matchGroupDetail.createdAt = convertDateToString(createdAt);
+  return matchGroupDetail;
 };
 
 const isPassedDepartmentFilter = (
