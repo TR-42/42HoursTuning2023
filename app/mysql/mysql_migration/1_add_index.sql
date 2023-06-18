@@ -19,14 +19,26 @@ ON user (office_id);
 CREATE INDEX idx_user_entry_date_and_kana
 ON user (entry_date,kana);
 
+CREATE FULLTEXT INDEX idx_user_kana
+ON user (kana);
+
+CREATE FULLTEXT INDEX idx_user_mail
+ON user (mail);
+
+CREATE FULLTEXT INDEX idx_user_goal
+ON user (goal);
+
+CREATE INDEX idx_user_entry_date
+ON user (entry_date);
+
 CREATE INDEX idx_department_role_member_role_id_belong
 ON department_role_member (role_id,belong);
 
-CREATE INDEX idx_skill_skill_name
+CREATE UNIQUE INDEX idx_skill_skill_name
 ON skill (skill_name);
 
 CREATE INDEX idx_skill_member_user_id
 ON skill_member (user_id);
 
-CREATE INDEX idx_session_user_id
+CREATE UNIQUE INDEX idx_session_user_id
 ON session (linked_user_id);
