@@ -1,7 +1,8 @@
 import { RowDataPacket } from "mysql2";
 import pool from "../../util/mysql";
-import { MatchGroupConfig, SearchedUser, User, UserForFilter } from "../../model/types";
+import { MatchGroupConfig, SearchedUser, Session, User, UserForFilter } from "../../model/types";
 import {
+  convertDateToString,
   convertToSearchedUser,
   convertToUserForFilter,
   convertToUsers,
@@ -10,16 +11,39 @@ import {
 export const getUserIdByMailAndPassword = async (
   mail: string,
   hashPassword: string
-): Promise<string | undefined> => {
-  const [user] = await pool.query<RowDataPacket[]>(
-    "SELECT user_id FROM user WHERE mail = ? AND password = ?",
+): Promise<[string, Session | undefined] | []> => {
+  const [user] = await pool.query<RowDataPacket[]>(`
+    SELECT
+      user.user_id AS user_id,
+      session.session_id AS session_id,
+      session.created_at AS created_at
+    FROM
+      user
+    LEFT JOIN session
+      ON user.user_id = session.linked_user_id
+    WHERE
+      user.mail = ?
+        AND
+      user.password = ?
+    `,
     [mail, hashPassword]
   );
-  if (user.length === 0) {
-    return;
+  if (!user || user.length === 0) {
+    return [];
   }
 
-  return user[0].user_id;
+  const user_id = user[0].user_id;
+  const createdAtDate: Date | undefined = user[0].created_at;
+  const sessionId: string = user[0].session_id ?? "";
+  const session: Session | undefined = sessionId == "" ? undefined : {
+    sessionId: sessionId,
+    userId: user[0].user_id,
+    createdAt: createdAtDate ? convertDateToString(createdAtDate) : ""
+  };
+  return [
+    user_id,
+    session
+  ];
 };
 
 export const getUsers = async (

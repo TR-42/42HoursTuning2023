@@ -6,7 +6,6 @@ import { convertDateToString } from "../../model/utils";
 import { v4 as uuidv4 } from "uuid";
 import { getUserIdByMailAndPassword } from "../users/repository";
 import {
-  getSessionByUserId,
   createSession,
   deleteSessions,
 } from "./repository";
@@ -38,7 +37,7 @@ sessionRouter.post(
     const hashPassword = createHash("sha256").update(password).digest("hex");
 
     try {
-      const userId = await getUserIdByMailAndPassword(mail, hashPassword);
+      const [userId, session] = await getUserIdByMailAndPassword(mail, hashPassword);
       if (!userId) {
         res.status(401).json({
           message: "メールアドレスまたはパスワードが正しくありません。",
@@ -46,8 +45,6 @@ sessionRouter.post(
         console.warn("email or password is invalid");
         return;
       }
-
-      const session = await getSessionByUserId(userId);
       if (session !== undefined) {
         res.cookie("SESSION_ID", session.sessionId, {
           httpOnly: true,
