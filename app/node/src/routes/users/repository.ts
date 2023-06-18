@@ -1,6 +1,6 @@
 import { RowDataPacket } from "mysql2";
 import pool from "../../util/mysql";
-import { SearchedUser, User, UserForFilter } from "../../model/types";
+import { MatchGroupConfig, SearchedUser, User, UserForFilter } from "../../model/types";
 import {
   convertToSearchedUser,
   convertToUserForFilter,
@@ -234,6 +234,75 @@ export const getUsersByGoal = async (goal: string): Promise<SearchedUser[]> => {
 
   return getUsersByUserIds(userIds);
 };
+
+export const getUserForFilterWith = async (
+  matchGroupConfig: MatchGroupConfig,
+  owner: UserForFilter
+) => {
+  let userRows: RowDataPacket[];
+  matchGroupConfig = matchGroupConfig;
+  let queryStr = [];
+  if (matchGroupConfig.departmentFilter !== "none")
+  {
+    const op = matchGroupConfig.departmentFilter === "onlyMyDepartment"
+      ? '=' : '!=';
+    queryStr.push(`\`department_name\` ${op} '${owner.departmentName}'`);
+  }
+
+  [userRows] = await pool.query<RowDataPacket[]>(`
+  SELECT
+    user.user_id AS user_id,
+    user.user_name AS user_name,
+    (SELECT office_name FROM office WHERE user.office_id = office.office_id) AS office_name,
+    user.user_icon_id AS user_icon_id,
+    (SELECT file_name FROM file WHERE file.file_id = user.user_icon_id) AS file_name,
+    (SELECT department_name FROM department WHERE department.department_id = (
+      SELECT
+        department_id
+      FROM
+        department_role_member
+      WHERE
+        department.department_id = department_role_member.department_id
+          AND
+        user.user_id = department_role_member.user_id
+          AND
+        department_role_member.belong = true
+    )) AS department_name
+  FROM
+    user
+  WHERE
+    user_id_int >= (
+      SELECT id_int_max FROM save_user_id_int_max
+    ) * RAND()
+  ${0 < queryStr.length ? "HAVING" : ""}
+      ${queryStr.join(" AND ")}
+  LIMIT 1;
+  `);
+
+  const user = userRows[0];
+
+  const [skillNameRows] = await pool.query<RowDataPacket[]>(`
+    SELECT
+      skill_name
+    FROM
+      skill
+    WHERE
+      skill_id IN (
+        SELECT
+          skill_id
+        FROM
+          skill_member
+        WHERE
+          user_id = ?
+      )
+    `,
+    [user.user_id]
+  );
+
+  user.skill_names = skillNameRows.map((row) => row.skill_name);
+
+  return convertToUserForFilter(user);
+}
 
 export const getUserForFilter = async (
   userId?: string

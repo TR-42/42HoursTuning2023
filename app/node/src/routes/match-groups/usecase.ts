@@ -9,7 +9,7 @@ import {
   getUserIdsBeforeMatched,
   insertMatchGroup,
 } from "./repository";
-import { getUserForFilter } from "../users/repository";
+import { getUserForFilter, getUserForFilterWith } from "../users/repository";
 import { convertDateToString } from "../../model/utils";
 
 export const checkSkillsRegistered = async (
@@ -39,18 +39,8 @@ export const createMatchGroup = async (
       console.error("not all members found before timeout");
       return;
     }
-    const candidate = await getUserForFilter();
+    const candidate = await getUserForFilterWith(matchGroupConfig, owner);
     if (
-      matchGroupConfig.departmentFilter !== "none" &&
-      !isPassedDepartmentFilter(
-        matchGroupConfig.departmentFilter,
-        owner.departmentName,
-        candidate.departmentName
-      )
-    ) {
-      console.log(`${candidate.userId} is not passed department filter`);
-      continue;
-    } else if (
       matchGroupConfig.officeFilter !== "none" &&
       !isPassedOfficeFilter(
         matchGroupConfig.officeFilter,
@@ -97,16 +87,6 @@ export const createMatchGroup = async (
 
   matchGroupDetail.createdAt = convertDateToString(createdAt);
   return matchGroupDetail;
-};
-
-const isPassedDepartmentFilter = (
-  departmentFilter: string,
-  ownerDepartment: string,
-  candidateDepartment: string
-) => {
-  return departmentFilter === "onlyMyDepartment"
-    ? ownerDepartment === candidateDepartment
-    : ownerDepartment !== candidateDepartment;
 };
 
 const isPassedOfficeFilter = (
