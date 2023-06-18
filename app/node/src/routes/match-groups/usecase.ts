@@ -5,23 +5,25 @@ import {
   UserForFilter,
 } from "../../model/types";
 import {
-  getMatchGroupDetailByMatchGroupId,
+  getRegisteredSkillNames,
   getUserIdsBeforeMatched,
-  hasSkillNameRecord,
   insertMatchGroup,
 } from "./repository";
-import { getUserForFilter } from "../users/repository";
+import { getUserForFilter, getUserForFilterWith } from "../users/repository";
+import { convertDateToString } from "../../model/utils";
 
 export const checkSkillsRegistered = async (
   skillNames: string[]
 ): Promise<string | undefined> => {
+  if (skillNames.length <= 0)
+    return undefined;
+  const registeredSkillNames = await getRegisteredSkillNames(skillNames);
   for (const skillName of skillNames) {
-    if (!(await hasSkillNameRecord(skillName))) {
+    if (!registeredSkillNames.includes(skillName)) {
       return skillName;
     }
   }
-
-  return;
+  return undefined;
 };
 
 export const createMatchGroup = async (
@@ -37,18 +39,8 @@ export const createMatchGroup = async (
       console.error("not all members found before timeout");
       return;
     }
-    const candidate = await getUserForFilter();
+    const candidate = await getUserForFilterWith(matchGroupConfig, owner);
     if (
-      matchGroupConfig.departmentFilter !== "none" &&
-      !isPassedDepartmentFilter(
-        matchGroupConfig.departmentFilter,
-        owner.departmentName,
-        candidate.departmentName
-      )
-    ) {
-      console.log(`${candidate.userId} is not passed department filter`);
-      continue;
-    } else if (
       matchGroupConfig.officeFilter !== "none" &&
       !isPassedOfficeFilter(
         matchGroupConfig.officeFilter,
@@ -80,28 +72,21 @@ export const createMatchGroup = async (
     console.log(`${candidate.userId} is added to members`);
   }
 
+  const createdAt = new Date();
   const matchGroupId = uuidv4();
-  await insertMatchGroup({
+  const matchGroupDetail: MatchGroupDetail = {
     matchGroupId,
     matchGroupName: matchGroupConfig.matchGroupName,
     description: matchGroupConfig.description,
     members,
     status: "open",
     createdBy: matchGroupConfig.ownerId,
-    createdAt: new Date(),
-  });
+    createdAt: createdAt,
+  };
+  await insertMatchGroup(matchGroupDetail);
 
-  return await getMatchGroupDetailByMatchGroupId(matchGroupId);
-};
-
-const isPassedDepartmentFilter = (
-  departmentFilter: string,
-  ownerDepartment: string,
-  candidateDepartment: string
-) => {
-  return departmentFilter === "onlyMyDepartment"
-    ? ownerDepartment === candidateDepartment
-    : ownerDepartment !== candidateDepartment;
+  matchGroupDetail.createdAt = convertDateToString(createdAt);
+  return matchGroupDetail;
 };
 
 const isPassedOfficeFilter = (
