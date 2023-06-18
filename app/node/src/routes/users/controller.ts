@@ -1,10 +1,10 @@
 import express from "express";
-import { execSync } from "child_process";
 import { getUsers } from "./repository";
 import { getUserByUserId } from "./repository";
 import { getFileByFileId } from "../files/repository";
 import { SearchedUser, Target, User } from "../../model/types";
 import { getUsersByKeyword } from "./usecase";
+import sharp from "sharp";
 
 export const usersRouter = express.Router();
 
@@ -30,12 +30,11 @@ usersRouter.get(
       }
       const path = userIcon.path;
       // 500px x 500pxでリサイズ
-      const data = execSync(`convert ${path} -resize 500x500! PNG:-`, {
-        shell: "/bin/bash",
-      });
+      const dataBuffer = sharp(path).resize({height:500, width:500}).toBuffer();
+      const dataString = `${(await dataBuffer).toString('base64')}`
       res.status(200).json({
         fileName: userIcon.fileName,
-        data: data.toString("base64"),
+        data: dataString,
       });
       console.log("successfully get user icon");
     } catch (e) {
